@@ -3,6 +3,7 @@ import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { AppBar, AppView, NavigationBar, Button } from '@aragon/ui'
 import { addressesEqual, shortenAddress, isAddress } from '../../web3-utils'
+import { isMobile } from '../../utils'
 import Screen from './Screen'
 import Home from './Home/Home'
 import AppPermissions from './AppPermissions'
@@ -119,6 +120,12 @@ class Permissions extends React.Component {
     }
   }
 
+  handleMenuPanelOpen = () => {
+    this.props.onMessage({
+      data: { from: 'app', name: 'menuPanel', value: true },
+    })
+  }
+
   // Assemble the navigation items
   getNavigationItems(location, resolveEntity) {
     const items = ['Permissions']
@@ -194,6 +201,19 @@ class Permissions extends React.Component {
               <AppView
                 appBar={
                   <AppBar
+                    title={
+                      <React.Fragment>
+                        {isMobile() &&
+                          navigationItems.length === 1 && (
+                            <React.Fragment>
+                              <button onClick={this.handleMenuPanelOpen}>
+                                M
+                              </button>
+                              Permissions
+                            </React.Fragment>
+                          )}
+                      </React.Fragment>
+                    }
                     endContent={
                       <Button
                         mode="strong"
@@ -204,10 +224,12 @@ class Permissions extends React.Component {
                       </Button>
                     }
                   >
-                    <NavigationBar
-                      items={navigationItems}
-                      onBack={this.goToHome}
-                    />
+                    {!(isMobile() && navigationItems.length === 1) && (
+                      <NavigationBar
+                        items={navigationItems}
+                        onBack={this.goToHome}
+                      />
+                    )}
                   </AppBar>
                 }
               >
