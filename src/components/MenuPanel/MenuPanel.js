@@ -1,6 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
+import { Spring, animated } from 'react-spring'
 import { Text, theme, unselectable } from '@aragon/ui'
 import memoize from 'lodash.memoize'
 import { appIconUrl } from '../../utils'
@@ -13,6 +14,7 @@ import {
   APPS_STATUS_READY,
   APPS_STATUS_LOADING,
 } from '../../symbols'
+import springs from '../../springs'
 
 import logo from './assets/logo.svg'
 
@@ -173,12 +175,62 @@ class MenuPanel extends React.PureComponent {
   }
 }
 
-const Main = styled.div`
-  position: relative;
+const AnimatedMenuPanel = ({ menuPanelOpened, onCloseMenuPanel, ...props }) => {
+  return (
+    <React.Fragment>
+      <Spring
+        from={{ progress: 0 }}
+        to={{ progress: !!menuPanelOpened }}
+        config={springs.lazy}
+        native
+      >
+        {({ progress }) => (
+          <Wrap
+            style={{
+              transform: progress.interpolate(
+                v => `translate3d(${-100 * (1 - v)}%, 0, 0)`
+              ),
+              opacity: progress.interpolate(v => (v > 0 ? 1 : 0)),
+            }}
+          >
+            <MenuPanel {...props} />
+          </Wrap>
+        )}
+      </Spring>
+      <Overlay opened={menuPanelOpened} onClick={onCloseMenuPanel} />
+    </React.Fragment>
+  )
+}
+
+const Overlay = styled.div`
+  position: absolute;
   z-index: 2;
+  width: 100vw;
+  height: 100vh;
+  display: ${({ opened }) => (opened ? 'block' : 'none')};
+
+  @media (min-width: 40em) {
+    display: none;
+  }
+`
+
+const Wrap = styled(animated.div)`
+  position: absolute;
+  z-index: 3;
+  width: 90vw;
+  height: 100vh;
+
+  @media (min-width: 40em) {
+    position: relative;
+    width: 220px;
+  }
+`
+
+const Main = styled.div`
+  width: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
-  width: 220px;
   flex-grow: 0;
   flex-shrink: 0;
   ${unselectable};
@@ -258,4 +310,4 @@ const ConnectionBullet = styled.span`
     connected ? theme.positive : theme.negative};
 `
 
-export default MenuPanel
+export default AnimatedMenuPanel
