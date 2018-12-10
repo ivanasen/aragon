@@ -12,6 +12,7 @@ import DeprecatedBanner from './components/DeprecatedBanner/DeprecatedBanner'
 import { getAppPath } from './routing'
 import { staticApps } from './static-apps'
 import { addressesEqual } from './web3-utils'
+import { isMobile } from './utils'
 import {
   APPS_STATUS_ERROR,
   APPS_STATUS_READY,
@@ -53,8 +54,13 @@ class Wrapper extends React.Component {
   }
   state = {
     appInstance: {},
+    menuPanelOpened: !isMobile(),
   }
   openApp = (instanceId, params) => {
+    if (isMobile()) {
+      this.handleMenuPanelClose()
+    }
+
     const { historyPush, locator } = this.props
     historyPush(getAppPath({ dao: locator.dao, instanceId, params }))
   }
@@ -81,6 +87,14 @@ class Wrapper extends React.Component {
       name: 'ready',
       value: true,
     })
+  }
+  handleAppIFrameMessage = ({ data: { name, value } }) => {
+    if (name === 'menuPanel') {
+      this.setState({ menuPanelOpened: value })
+    }
+  }
+  handleMenuPanelClose = () => {
+    this.setState({ menuPanelOpened: false })
   }
   handleNotificationsClearAll = () => {
     const { wrapper } = this.props
@@ -128,9 +142,11 @@ class Wrapper extends React.Component {
             appsStatus={appsStatus}
             activeInstanceId={instanceId}
             connected={connected}
+            menuPanelOpened={this.state.menuPanelOpened}
             notificationsObservable={wrapper && wrapper.notifications}
             onOpenApp={this.openApp}
             onClearAllNotifications={this.handleNotificationsClearAll}
+            onCloseMenuPanel={this.handleMenuPanelClose}
             onOpenNotification={this.handleNotificationNavigation}
             onRequestAppsReload={onRequestAppsReload}
           />
@@ -166,6 +182,7 @@ class Wrapper extends React.Component {
         <Home
           connected={connected}
           appsLoading={appsLoading}
+          onMessage={this.handleAppIFrameMessage}
           onOpenApp={this.openApp}
           locator={locator}
           apps={apps}
@@ -180,6 +197,7 @@ class Wrapper extends React.Component {
           appsLoading={appsLoading}
           permissionsLoading={permissionsLoading}
           params={params}
+          onMessage={this.handleAppIFrameMessage}
           onParamsRequest={this.handleParamsRequest}
         />
       )
@@ -195,6 +213,7 @@ class Wrapper extends React.Component {
           account={account}
           apps={apps}
           daoAddress={daoAddress}
+          onMessage={this.handleAppIFrameMessage}
           onOpenApp={this.openApp}
           walletNetwork={walletNetwork}
         />
@@ -212,6 +231,7 @@ class Wrapper extends React.Component {
         app={app}
         ref={this.handleAppIFrameRef}
         onLoad={this.handleAppIFrameLoad}
+        onMessage={this.handleAppIFrameMessage}
       />
     ) : (
       <App404 onNavigateBack={this.props.historyBack} />
