@@ -27,3 +27,9 @@ yarn-error.log*
 # ignore lock files
 package-lock.json
 yarn.lock
+
+# Loom files
+chaindata
+app.db
+loom
+genesis.json

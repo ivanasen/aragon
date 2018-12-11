@@ -1,4 +1,4 @@
-import Web3 from 'web3'
+// import Web3 from 'web3'
 import {
   getAssetBridge,
   getDefaultEthNode,
@@ -8,6 +8,8 @@ import {
 import { getNetworkConfig } from './network-config'
 import { noop } from './utils'
 import { toWei } from './web3-utils'
+
+import loomProvider from './loom-web3-provider'
 
 const appsOrder = ['TokenManager', 'Voting', 'Finance', 'Vault']
 const networkType = getEthNetworkType()
@@ -123,8 +125,12 @@ if (process.env.NODE_ENV !== 'production') {
 export const defaultEthNode =
   getDefaultEthNode() || networkConfig.nodes.defaultEth
 export const web3Providers = {
-  default: new Web3.providers.WebsocketProvider(defaultEthNode),
-  wallet: window.web3 && window.web3.currentProvider,
+  // default: new Web3.providers.WebsocketProvider(defaultEthNode),
+  // wallet: window.web3 && window.web3.currentProvider,
+  // loom: loomProvider,
+  default: loomProvider,
+  wallet: loomProvider,
+  loom: loomProvider,
 }
 export const defaultGasPriceFn =
   networkType === 'main'
